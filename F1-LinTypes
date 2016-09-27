@@ -13,7 +13,7 @@ By `𝔹[T]` (also known as `Maybe[T]` or `Optional[T]`) let's denote the type
 The type `𝔹 := 𝔹[Unit]` can be naturally identified with boolean type, maps
 `T -> 𝔹` classify decidable predicates on `T`.
 
-The functor `𝔹[_]` is naturally forms a monad. It's Eilenberg-Moore category
+The functor `𝔹[_]` is naturally forms a monad. Its Eilenberg-Moore category
 is the category of pointed types with maps preserving the basepoint. This
 category is a pointed (has zero object 𝔹[Nothing] ≅ Unit) closed symmetric
 monoidal category with smash product as tensor product and 𝔹 as its unit.
