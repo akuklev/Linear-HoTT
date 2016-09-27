@@ -1,0 +1,251 @@
+§ Computational Sierpiński Space and Algebras over the Sphere Spectrum
+
+There is a deep analogy between partial computations and quantum transducers.
+Working out this analogy in the framework of Homotopy Type Theory leads to an
+interesting category of types known in literature as algebras over the Sphere
+Spectrum.
+
+§§ Preliminaries: Maybe-monad, the Boolean and Discretly-Pointed Types
+By `𝔹[T]` (also known as `Maybe[T]` or `Optional[T]`) let's denote the type
+  @Family 𝔹[T]:
+    Value(t : T)
+    Nothing
+The type `𝔹 := 𝔹[Unit]` can be naturally identified with boolean type, maps
+`T -> Ω` classify decidable predicates on `T`.
+
+The functor `𝔹[_]` is naturally forms a monad. It's Eilenberg-Moore category
+is the category of pointed types with maps preserving the basepoint. This
+category is a pointed (has zero object 𝔹[Nothing] ≅ Unit) closed symmetric
+monoidal category with smash product as tensor product and 𝔹 as its unit.
+The presence of the canonical basepoint-preserving map into 𝔹 guarantees
+that basepoint is discrete in each type (i.e. the property `p = basepoint`
+is decidable for each object of the category). This category has all limits
+and colimits of the ambient category, thus at least finitely complete and
+cocomplete.
+
+TODO: Check if this category is also locally monoidaly closed in the sense
+of D. Chikhladze at <http://mathoverflow.net/questions/205902>.
+
+The Kleisly category for `𝔹[_]` consists of types of the form `𝔹[T]` with maps
+arising from maps `X -> 𝔹[Y]`. It can be also viewed as a subcategory of the 
+EM-category, consisting only of the types of the form `𝔹[T]` with `Nothing` as
+basepoint. This category is still a pointed symmetric monoidal category with
+zero object 𝔹[Nothing] and ∧-unit object 𝔹, it still has all colimits of the
+ambient category, but it doesn't have any nontrivial limits and is not closed.
+ 
+§§ Partial Computations
+By `℧[T]` let's denote the type of computations returning values of the type
+`T` but possibly diverging at some inputs. Morally, elements of `℧[T]` should
+be given by functions
+  compute(timeout : Nat) : 𝔹[T]
+returning either `Value(t)` if computation succeeds within `timeout` of steps
+or `Nothing` otherwise with additional property that increasing timeout never
+changes `Value(t)` to something else. Furthermore computations yielding same
+results should be identified regardless of minimal timeout leading to result,
+and it must be provable that `℧[_]` is naturally a monad, which requires
+definition to be a bit more involved.
+
+Recently Altenkirch et al. [1] have proposed a particularily nice definition
+of `℧[T]`:
+  @Family ℧[T]:
+  	℧-extensionality(a b : ℧[T], a ⊑ b, b ⊑ a) : (a = b)
+    Computation(c(timeout : Nat) : ℧[T], ∀(n : Nat), c(n) ⊑ c(n + 1))
+    Value(t : T)
+    ⊥
+	
+    @Family _⊑_ : (a b : ℧[T]) -> Prop:
+	  refl(x : ℧[T]) : x ⊑ x
+	  bott(x : ℧[T]) : ⊥ ⊑ x 
+	  mono(:c, :p) : Computation(c, p) ⊑ d -> ∀(n : Nat), c(n) ⊑ d
+	  nomo(:c, :p) : ∀(n : Nat), c(n) ⊑ d -> Computation(c, p) ⊑ d
+
+Note that computation `c` maps to `℧[T]` instead of `𝔹[T]` used in the naïve
+formulation, and the definition of `℧[T]` is mutually inductive with definition
+of _⊑_, thus ℧[T] is a Higher Inductive-Inductive Type. It can be shown that it
+is set-truncated if `T` is, and naturally forms a monad, which gives a rise to
+the Kleisly category of types `℧[T]` and maps between them arising from maps of
+the kind `X -> ℧[Y]`. It's a cocartesian category with zero object `℧[Empty]`,
+hence a pointed category. It is not closed and admits no direct products, but
+can be equipped with a smash product `℧[X] ∧ ℧[Y] -> ℧[X × Y]` with neutral
+element `℧` := `℧[Unit]` making it a symmetric monoidal category.
+
+The type `℧` is analogous to the boolean, maps `T -> ℧` classify semidecidable
+properties on `T`, so we'll call it the Sierpiński Space.
+
+This notion of partial computability enables definition of semi-deterministic
+combinator `c +₍e₎ g` that interleavingly computes `c` and `g` and returns the
+value whichever returns first, given an evidence `e : c ∥ g` that `c` and `g`
+never terminate both, or agree on their results if they do. Composition of the
+above mentioned Kleisli category distribute over `+`: `f(a + b) = f(a) + f(b)`
+whenever either of sides defined. The operation `+` has neutral element ⊥ and
+is symmetric (associative and commutative). Besides that, it is idempotent and
+admits countable completion, i.e. semi-deterministic sums of countably infinite
+lists of ∥-compatible functions can be formed. This means in particular, that
+– the type of maps `T -> ℧` almost satisfies axioms of a topology:
+  it contains constant maps `⊥` and `Value(∗)` corresponding to trivially true
+  and trivially false predicates, is closed under ∧-products providing finite
+  intersections of predicates and under +-sums providing utmost countably
+  infinite unions (arbitrary unions would yield a genuine topology, countable
+  unions suffice for completely separable spaces).
+– even when we're working in a model where all functions are continious, we can
+  represent arbitrary measurable functions: by Lusin's theorem all measurable
+  functions `X -> Y`, `X` being a completely separable space, can be obtained
+  by combining a countable collection of ∥-compatible continious partial maps
+  `X -> ℧[Y]` that remain continious when restricted to the domain where they
+  terminate.
+
+By `X ⤍ Y` let's denote the type `(f : X -> ℧[Y], ¬{X | f(x) = ⊥})`, i.e. the
+subtype of partial functions `X -> ℧[Y]` with negatively expressed (hence mere)
+property that they always terminate. The type `X ⤍ Y` contains all measurable
+functions from `X` to `Y` in all models of HoTT where the Π-types contain all
+continious functions from `X` to `Y`. Maps `_⤍_` clearly form a category, but
+it remains to check whether this category is a closed symmetric monoidal one,
+as in the classical case [2].
+
+We'll refer to the type `T -> ℧` as "computational topology of T" (as already
+mentioned, it almost satisfies the axioms of a topology, the difference being
+irrelevant for most cases of interest).
+The computational topology of the Cauchy Reals from the HoTT book contains all
+rays of the form `{x : ℝ | x < r}` and `{x : ℝ | x > r}`, finite intersections
+and utmost countable unions theirof, so it has provides at least as many open
+and as many closed subsets as the standard topology on `ℝ`.
+TODO: Try to show that presence of any others would imply (L)LPO.
+
+It is quite easy to see that the computational topology of the types `℧[T]`
+themselves contains the constant maps `⊥` and `Value(∗)` and the map `id`,
+providing closed subsets `℧[T]`, `⊥` and `{x : ℧ | x = ⊥}`. Existence of any
+other closed subsets can be used to construct a "negation" map on `℧ -> ℧`, 
+hence implies LPO (𝔹 ≅ ℧) and makes all computational topologies discrete.
+We can prohibit it by stating that `(℧ = ℧)` is contractible, which is exactly
+statement of having no proper clopen (decidable) subsets. This assumption also
+prohibits all types `℧[T]` any computationally closed sets besides `℧[T]`, `⊥`
+and `{x : ℧ | x = ⊥}`.
+
+The Eilenberg-Moore category ℧-Mod for the `℧[_]`-monad is very similar to the
+Eilenberg-Moore category for the `𝔹[_]`-monad: it consists of pointed types
+and basepoint-preserving morphisms, is a pointed closed symmetric monoidal
+category with zero object `℧[Nothing]` and ∧-unit object ℧, has lots of (at
+least all finite) limits and colimits. Due to the canonical map into the
+∧-unit ℧ type and canonical maps from the very same type into every object
+T of this for every element of T, computational topology of the objects of
+the EM-category is severely restricted: basepoint has to be closed subset
+and no other point is allowed to be closed unless we are willing to accept
+LPO (or if we insist on `(℧ = ℧)` being contractible). At the same time
+under assumption of a nonreusable ℧-oracle, computational topology of the
+types `℧[T]` gets equivalent to `𝔹[T]`, i.e. that of `T` with adjoined
+discrete point.
+
+Unfortunatelly, this category has no trace of semi-deterministic summation.
+We would like to construct a similar category where types are naturally
+equipped by such operation, so that it would naturally include the Kleisli
+category for `℧[_]` as a subcategory, and have all the nice properties of
+the EM-category like having enough limits and and being (locally?) closed.
+
+[1] “Partiality, Revisited”, T. Altenkirch, N. Danielsson, <http://www.cse.chalmers.se/~nad/publications/altenkirch-danielsson-types2016.pdf>
+
+[2] “Categorical Probability Theory”, K. Sturtz,
+<http://arxiv.org/pdf/1406.6030v4.pdf>
+
+§§ Quantum Transducers
+Quantum transducers are to be understood as black boxes with one input hole and
+one output hole, e.g. they take a photon, perform some transformations on it
+using some magnets or alike, and pass the photon forth.
+
+For composability, quantum transducers are typed much like maps (`A -> B`), but
+types are to be understood as interfaces, not as datatypes. For example let's
+denote by `f : Unit -> TwoSlits` the double-slit photon generator. Physically
+it consists of a single-photon light source (basically, a special ultra-weak
+LED), enclosed into a box with two small holes. The generated photon gets lost
+on the way (`⊥`), or passed through either of the holes.
+
+Subsequent transducers `g h : TwoSlits -> R`, connect respectively to the first
+or to the second hole. If we only connect `g` to `f`, the photons passing
+through the second hole also get lost and bolster the ⊥-range. If we only
+connect `h` to `f`, it happens to the photons going through the first hole.
+
+The mutual exclusiveness of `g` and `h` (written `e : g ∥ h`) allows us to use
+parallel compostion `g +₍e₎ h`, which is somehow similar to semideterministic
+sum, the main difference is that refl is not in general a generator of `∥`,
+quantum transducers are not is mutually exclusive to itself normally. Wo this
+`+` does not in general support equal arguments and thus is not in general 
+idempotent (if is happens to be defined for equal arguments, it is), but it
+still has to be symmetric (associative and commutative) up to higher homotopy
+and still has the neutral element ⊥.
+
+In the previous section we complained that the Eilenberg-Moore category for
+the ℧-monad carries no trace of the sum operation. Now we're ready to define
+a category that supports such operation and in a fashion compatible with
+quantum transducers. Together with each type of quantum transducers we'll
+define a type of ∥-compatible pairs of them, ∥-tripples of them and so on.
+
+By higher ℧-module `M` let's denote the following construction:
+– Sequence M.∥-Chain[length : Nat] of pointed types from ℧-Mod with
+  M.∥-Chain[0] ≅ ℧[Nothing].
+– Maps between them of the form
+    insertUnit(x : ∥-Chain, position : Fin[x.length + 1]) : ∥-Chain(x.length + 1),
+	composeSubchain(
+	 x : ∥-Chain,
+	 start : Fin[x.length],
+	 len : Fin[x.length - start]
+	) : ∥-Chain(x.length - len + 1)
+	permute(x : ∥-Chain, p : Permutation[x.length]) : ∥-Chain[x.length]
+  and proofs that result of any composition of these maps resulting in ∥-Chain[1]
+  depends only on the initial chain.
+  It's easy to see that these maps between ∥-chains of length `n` and `m` are
+  in one-to-one correspondence with zero-preserwing maps Fin[n] -> Fin[m], and
+  the compostion of maps correspond to composition of their codes. 
+– Basepoint-preserving map `eval : ℧(M.∥-Chain[1]) -> M.∥-Chain[1]` satisfying
+  the usual properties of monadic action.
+  
+It is not hard to see that higher ℧-modules together with structure-preserving
+maps between them are just a functor from Γ' to EM-category of `℧[_]` (pointed
+types with special computationally topological structure). Classically this is
+precisely the construction introduced by Connes in [4], and ℧-modules can be
+identified with spectra. In particular, the inclusion of the Kleisli-category
+for `℧[T]` maps Ts to their spectra. We speculate that these spectra can be
+naturally seen as cocomutative comonoids, and the category of higher ℧-modules
+is also locally closed monoidal category providing internal HOMs for its
+objects coming from Kleisli category.
+
+By 𝔽 let's denote the type of self-composable quantum transducers containing
+exactly one non-⊥ transducer. Let's see how it's composable chains look like:
+℧.∥-Chain[0] = {⊥}
+℧.∥-Chain[1] = {∗, ⊥}
+℧.∥-Chain[2] = {(∗, ⊥), (⊥, ∗), ⊥}, where ⊥ and non-⊥ elements are equal due
+to cancellation property of `+` and two non-⊥ elements are equal because of
+symmetry of `+`, so it's homotopically a circle.
+℧.∥-Chain[3] = {(∗, ⊥, ⊥), (⊥, ∗, ⊥), (⊥, ⊥, ∗), ⊥}, where non-⊥ elements
+are equal with a 2-filler face because of symmetry of `+`, each of them is
+equal to ⊥ because of cancellation property, symmetry also induces 2-fillers
+between these equalities.
+In general, ℧.∥-Chain[n + 1] duplicates all non-⊥ elements of ℧.∥-Chain[n]
+and creates pairwise equalities between them, that's exactly what reduced
+suspension does.
+So, 𝔽 can be identified with sphere spectrum and it is also an initial
+algebra over sphere spectrum and higher ℧-modules are precisely modules
+over 𝔽 as algebra. Following A. Connes and C. Consani [4] we identify 𝔽
+with illusive “Field with one element” and recover a vast generalization
+of rings as algebras over 𝔽, Algebras over the Sphere Spectrum. The object
+℧ is a particular example of such an algebra, the smallest idempotent
+semiring (denoted 𝔹 in [4]), types comming from the Kleisli category for
+`℧[_]` should be precisely the 𝔽-modules which are also ℧-modules.
+
+We anticipate that path objects for A-modules naturally carry structure
+of weak Hopf algebras over A, in particular for ℧-modules these can be
+identified to groupoids, and for objects arising via the Kleisli category
+the usual fundamental groupoid should reappear.
+
+We suspect that internal language of the category of 𝔽-modules it the
+sought-for linear type theory containing both intuitionistic types
+(℧-modules) and linear types (𝔽-modules), and note that for every
+℧-module we can canonically form a linear version by forgetting its
+equality-structure, and for any 𝔽-module we can canonically form an
+icon (see C. McBride, [5]) by collapsing all items together, and this
+icon turns out to be canonically a cocommutative comonoid, hence
+allowing duplication.
+
+
+[4] “Absolute algebra and Segal’s Γ -rings”, A. Connes, C. Consani,
+<http://www.alainconnes.org/docs/gammasets.pdf>
+[5] “I Got Plenty o' Nuttin'”, C. McBride
+<https://personal.cis.strath.ac.uk/conor.mcbride/pub/Rig.pdf>
