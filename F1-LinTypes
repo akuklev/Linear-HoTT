@@ -48,16 +48,16 @@ definition to be a bit more involved.
 Recently Altenkirch et al. [1] have proposed a particularily nice definition
 of `℧[T]`:
   @Family ℧[T]:
-  	℧-extensionality(a b : ℧[T], a ⊑ b, b ⊑ a) : (a = b)
+    ℧-extensionality(a b : ℧[T], a ⊑ b, b ⊑ a) : (a = b)
     Computation(c(timeout : Nat) : ℧[T], ∀(n : Nat), c(n) ⊑ c(n + 1))
     Value(t : T)
     ⊥
 	
     @Family _⊑_ : (a b : ℧[T]) -> Prop:
-	  refl(x : ℧[T]) : x ⊑ x
-	  bott(x : ℧[T]) : ⊥ ⊑ x 
-	  mono(:c, :p) : Computation(c, p) ⊑ d -> ∀(n : Nat), c(n) ⊑ d
-	  nomo(:c, :p) : ∀(n : Nat), c(n) ⊑ d -> Computation(c, p) ⊑ d
+      refl(x : ℧[T]) : x ⊑ x
+      bott(x : ℧[T]) : ⊥ ⊑ x 
+      mono(:c, :p) : Computation(c, p) ⊑ d -> ∀(n : Nat), c(n) ⊑ d
+      nomo(:c, :p) : ∀(n : Nat), c(n) ⊑ d -> Computation(c, p) ⊑ d
 
 Note that computation `c` maps to `℧[T]` instead of `𝔹[T]` used in the naïve
 formulation, and the definition of `℧[T]` is mutually inductive with definition
