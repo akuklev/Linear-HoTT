@@ -141,7 +141,8 @@ equipped by such operation, so that it would naturally include the Kleisli
 category for `℧[_]` as a subcategory, and have all the nice properties of
 the EM-category like having enough limits and and being (locally?) closed.
 
-[1] “Partiality, Revisited”, T. Altenkirch, N. Danielsson, <http://www.cse.chalmers.se/~nad/publications/altenkirch-danielsson-types2016.pdf>
+[1] “Partiality, Revisited”, T. Altenkirch, N. Danielsson,
+<http://www.cse.chalmers.se/~nad/publications/altenkirch-danielsson-types2016.pdf>
 
 [2] “Categorical Probability Theory”, K. Sturtz,
 <http://arxiv.org/pdf/1406.6030v4.pdf>
